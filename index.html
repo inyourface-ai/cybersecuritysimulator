@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akademi Siber: Edukasi Interaktif</title>
+    <style>
+        /* =========================================
+           UI/UX: THEME VARIABLES (LIGHT & DARK)
+           ========================================= */
+        :root {
+            --bg-gradient: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --primary: #6366f1; 
+            --primary-hover: #4f46e5;
+            --success: #10b981;
+            --success-bg: #d1fae5;
+            --error: #f43f5e;
+            --error-bg: #ffe4e6;
+            --info-bg: rgba(224, 231, 255, 0.8);
+            --info-border: #818cf8;
+            --input-bg: rgba(255, 255, 255, 0.9);
+            --shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #818cf8; 
+            --primary-hover: #6366f1;
+            --success: #34d399;
+            --success-bg: rgba(6, 78, 59, 0.6);
+            --error: #fb7185;
+            --error-bg: rgba(136, 19, 55, 0.6);
+            --info-bg: rgba(49, 46, 129, 0.6);
+            --info-border: #6366f1;
+            --input-bg: rgba(15, 23, 42, 0.8);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        /* =========================================
+           BASE STYLES & LAYOUT
+           ========================================= */
+        body {
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            transition: background 0.5s ease, color 0.3s ease;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+            transition: background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* =========================================
+           SIDEBAR
+           ========================================= */
+        #sidebar {
+            width: 280px;
+            padding: 25px 20px;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            border-right: 1px solid var(--glass-border);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: -webkit-linear-gradient(45deg, var(--primary), #d946ef);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .level-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid transparent;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            text-align: left;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: not-allowed;
+            transition: all 0.3s ease;
+        }
+
+        .level-btn.active {
+            color: var(--text-main);
+            cursor: pointer;
+            border-color: var(--glass-border);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .level-btn.active:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .level-btn.current {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            border: none;
+        }
+
+        .level-btn.current:hover {
+            transform: scale(1.02);
+            background: var(--primary-hover);
+        }
+
+        #theme-toggle-btn {
+            margin-top: auto;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        #theme-toggle-btn:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-2px); }
+
+        /* =========================================
+           MAIN CONTENT AREA
+           ========================================= */
+        #main-content {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .progress-container {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            height: 12px;
+            width: 100%;
+            margin-bottom: 40px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+        }
+
+        #progress-bar {
+            background: linear-gradient(90deg, var(--primary), #d946ef);
+            height: 100%;
+            width: 20%;
+            border-radius: 20px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px rgba(217, 70, 239, 0.5);
+        }
+
+        .level-container {
+            display: none;
+            max-width: 850px;
+            margin: 0 auto;
+            animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .level-container.visible { display: block; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 { margin-top: 0; margin-bottom: 25px; font-weight: 800; letter-spacing: -0.5px; }
+
+        /* =========================================
+           COMPONENTS (Info, Task, Inputs, Buttons)
+           ========================================= */
+        .info-box {
+            background-color: var(--info-bg);
+            border-left: 5px solid var(--info-border);
+            padding: 20px 25px;
+            border-radius: 0 16px 16px 0;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            backdrop-filter: blur(5px);
+        }
+
+        .info-box h3 { margin-top: 0; color: var(--info-border); display: flex; align-items: center; gap: 8px; }
+
+        .task-box { padding: 30px; border-radius: 20px; margin-bottom: 20px;}
+        .task-box h3 { margin-top: 0; color: var(--text-main); font-weight: 700; margin-bottom: 20px;}
+
+        label { font-weight: 600; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 5px; display: block; }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 14px 18px;
+            margin-top: 8px;
+            margin-bottom: 20px;
+            background-color: var(--input-bg);
+            color: var(--text-main);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: all 0.3s;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2); }
+
+        button.action-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        button.action-btn:hover { background-color: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4); }
+        button.action-btn:active { transform: translateY(1px); }
+        button.action-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; transform: none; }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            display: none; 
+            font-weight: 500;
+            line-height: 1.6;
+        }
+
+        .feedback.show { display: block; animation: slideUp 0.3s; }
+        .feedback.success { background-color: var(--success-bg); color: var(--success); border: 1px solid var(--success); }
+        .feedback.error { background-color: var(--error-bg); color: var(--error); border: 1px solid var(--error); }
+
+        /* Mockup Email & Code Displays */
+        .email-mockup {
+            background-color: var(--input-bg);
+            border: 1px solid var(--glass-border);
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
+            position: relative;
+        }
+
+        .email-header { margin-bottom: 15px; font-size: 0.95rem; color: var(--text-muted); border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; line-height: 1.5;}
+        .email-link-btn { display: inline-block; background-color: #0284c7; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin-top: 15px; font-weight: bold; cursor: pointer; transition: 0.2s;}
+        .email-link-btn:hover { opacity: 0.9; }
+        
+        .code-display { display:block; padding: 15px; background: var(--input-bg); border: 1px dashed var(--text-muted); border-radius: 10px; font-size: 1.2rem; text-align: center; letter-spacing: 2px; margin-bottom: 20px; color: var(--primary); font-weight: bold;}
+
+        /* Tooltip Simulation for Links */
+        .tooltip-container { position: relative; display: inline-block; }
+        .tooltip-container:hover::after {
+            content: attr(data-url);
+            position: absolute;
+            bottom: -35px;
+            left: 0;
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            50% { transform: translateX(8px); }
+            75% { transform: translateX(-8px); }
+        }
+        .shake { animation: shake 0.4s ease-in-out; }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar" class="glass-panel">
+        <div class="logo">CYBERSECURITY SIMULATOR</div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: -15px; margin-bottom: 30px; font-weight: 500;">Simulasi Keamanan Web</p>
+        
+        <button class="level-btn active current" id="btn-lvl1" onclick="showLevel(1)">
+            <span>1. Phishing</span> <span id="icon-lvl1">🎯</span>
+        </button>
+        <button class="level-btn" id="btn-lvl2" onclick="showLevel(2)">
+            <span>2. Kata Sandi</span> <span id="icon-lvl2">🔒</span>
+        </button>
+        <button class="level-btn" id="btn-lvl3" onclick="showLevel(3)">
+            <span>3. SQL Injection</span> <span id="icon-lvl3">🔒</span>
+        </button>
+        <button class="level-btn" id="btn-lvl4" onclick="showLevel(4)">
+            <span>4. XSS Scripting</span> <span id="icon-lvl4">🔒</span>
+        </button>
+        <button class="level-btn" id="btn-lvl5" onclick="showLevel(5)">
+            <span>5. Kriptografi</span> <span id="icon-lvl5">🔒</span>
+        </button>
+
+        <button id="theme-toggle-btn" onclick="toggleTheme()">
+            🌙 Mode Gelap
+        </button>
+    </div>
+
+    <div id="main-content">
+        <div class="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        
+        <div id="lvl1" class="level-container visible">
+            <h1>Level 1: Jebakan Phishing</h1>
+            <div class="info-box">
+                <h3>💡 Konsep Edukasi: Spektrum Phishing</h3>
+                <p>Phishing tidak hanya terjadi via Email. Penyerang menggunakan banyak medium untuk memanipulasi Anda: <strong>Web Palsu</strong>, <strong>Tautan Tersembunyi</strong>, dan <strong>Smishing</strong>. Mari kita uji ketelitian Anda di 5 skenario berikut.</p>
+            </div>
+
+            <div id="sublvl1-1" class="task-box glass-panel">
+                <h3>🔍 Tahap 1/5: Email Phishing (Typosquatting)</h3>
+                <div class="email-mockup">
+                    <div class="email-header">
+                        <strong>Dari:</strong> security@paypaI-support.com<br>
+                        <strong>Kepada:</strong> anda@perusahaan.com<br>
+                        <strong style="color: var(--error);">Subjek: [PENTING] Akun Anda Akan Diblokir</strong>
+                    </div>
+                    <p>Pelanggan yang terhormat, harap segera verifikasi identitas Anda.</p>
+                    <a class="email-link-btn">Verifikasi Akun</a>
+                </div>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button class="action-btn" style="background-color: var(--success);" onclick="checkPhishingSub(1, false)">Ini Aman ✅</button>
+                    <button class="action-btn" style="background-color: var(--error);" onclick="checkPhishingSub(1, true)">Ini Phishing 🚩</button>
+                </div>
+                <div id="feedback-sub1-1" class="feedback"></div>
+            </div>
+
+            <div id="sublvl1-2" class="task-box glass-panel" style="display:none;">
+                <h3>🔗 Tahap 2/5: Tautan Tersembunyi</h3>
+                <p>Arahkan kursor Anda ke tombol di bawah ini <strong>tanpa mengkliknya</strong>. Perhatikan *tooltip* URL tujuan asli.</p>
+                <div class="email-mockup" style="text-align: center;">
+                    <h2 style="color: #f59e0b;">🎉 ANDA TERPILIH! 🎉</h2>
+                    <div class="tooltip-container" data-url="Tujuan Asli: http://bit.ly/klaim-diskon-palsu-88">
+                        <a href="#" class="email-link-btn" style="background-color: #f59e0b;">www.tokopedia.com/klaim-hadiah</a>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button class="action-btn" style="background-color: var(--success);" onclick="checkPhishingSub(2, false)">Ini Aman ✅</button>
+                    <button class="action-btn" style="background-color: var(--error);" onclick="checkPhishingSub(2, true)">Ini Phishing 🚩</button>
+                </div>
+                <div id="feedback-sub1-2" class="feedback"></div>
+            </div>
+
+            <div id="sublvl1-3" class="task-box glass-panel" style="display:none;">
+                <h3>🌐 Tahap 3/5: Halaman Web Palsu</h3>
+                <div class="email-mockup">
+                    <div style="background: var(--input-bg); padding: 10px; border-radius: 8px; font-family: monospace; border: 1px solid var(--error); margin-bottom: 20px;">
+                        ⚠️ Tidak Aman | <strong>http://www.instargam-login.com/auth</strong>
+                    </div>
+                    <div style="text-align: center; max-width: 300px; margin: 0 auto; border: 1px solid var(--glass-border); padding: 20px; border-radius: 8px;">
+                        <h2 style="margin-top: 0;">Instagram</h2>
+                        <input type="text" placeholder="Phone number, username, or email" disabled>
+                        <button class="action-btn" style="width: 100%; padding: 10px;">Log In</button>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button class="action-btn" style="background-color: var(--success);" onclick="checkPhishingSub(3, false)">Ini Aman ✅</button>
+                    <button class="action-btn" style="background-color: var(--error);" onclick="checkPhishingSub(3, true)">Ini Phishing 🚩</button>
+                </div>
+                <div id="feedback-sub1-3" class="feedback"></div>
+            </div>
+
+            <div id="sublvl1-4" class="task-box glass-panel" style="display:none;">
+                <h3>🛡️ Tahap 4/5: Evaluasi Sistem Keamanan</h3>
+                <div class="email-mockup">
+                     <div class="email-header">
+                         <strong>Dari:</strong> noreply@github.com<br>
+                         <strong>Subjek:</strong> [GitHub] A new device signed in to your account
+                     </div>
+                     <p>A new device just signed in to your account.</p>
+                     <div class="tooltip-container" data-url="Tujuan Asli: https://github.com/settings/security">
+                         <a href="#" class="email-link-btn" style="background-color: #333;">https://github.com/settings/security</a>
+                     </div>
+                </div>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button class="action-btn" style="background-color: var(--success);" onclick="checkPhishingSub(4, false)">Ini Aman ✅</button>
+                    <button class="action-btn" style="background-color: var(--error);" onclick="checkPhishingSub(4, true)">Ini Phishing 🚩</button>
+                </div>
+                <div id="feedback-sub1-4" class="feedback"></div>
+            </div>
+
+            <div id="sublvl1-5" class="task-box glass-panel" style="display:none;">
+                <h3>📱 Tahap 5/5: Pesan Teks (Smishing)</h3>
+                <div class="email-mockup" style="max-width: 320px; border-radius: 20px; padding: 0; overflow: hidden; margin-left: 0;">
+                     <div style="background: #cbd5e1; padding: 15px; text-align: center; font-weight: bold; color: #334155;">Pengirim: +62-812-XXXX-XXXX</div>
+                     <div style="padding: 20px; font-size: 0.95rem;">
+                         "Paket gagal dikirim. Perbarui alamat di: <br><br>
+                         <a href="#" style="color: #2563eb; font-weight: bold;">http://jnt-express-track.info/update</a>"
+                     </div>
+                </div>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button class="action-btn" style="background-color: var(--success);" onclick="checkPhishingSub(5, false)">Ini Aman ✅</button>
+                    <button class="action-btn" style="background-color: var(--error);" onclick="checkPhishingSub(5, true)">Ini Phishing 🚩</button>
+                </div>
+                <div id="feedback-sub1-5" class="feedback"></div>
+            </div>
+
+            <div id="sublvl1-complete" class="info-box" style="display:none; border-left-color: var(--success); background-color: var(--success-bg); color: var(--text-main);">
+                <h3 style="color: var(--success);">🎉 Level 1 Diselesaikan!</h3>
+                <p>Hebat! Anda berhasil mengidentifikasi berbagai macam jenis serangan Phishing.</p>
+                <button class="action-btn" onclick="showLevel(2)">Lanjut ke Level 2</button>
+            </div>
+        </div>
+
+        <div id="lvl2" class="level-container">
+            <h1>Level 2: Kekuatan Kata Sandi</h1>
+            <div class="info-box">
+                <h3>💡 Konsep Edukasi: Brute Force & Entropi</h3>
+                <p>Serangan <em>Brute Force</em> mencoba menebak kata sandi Anda dengan menguji jutaan kombinasi huruf dan angka setiap detik.</p>
+            </div>
+
+            <div id="sublvl2-1" class="task-box glass-panel">
+                <h3>🔍 Tahap 1/4: Identifikasi Kata Sandi</h3>
+                <code class="code-display" style="font-size: 1.8rem; letter-spacing: 5px;">admin123</code>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button class="action-btn" style="background-color: var(--success);" onclick="checkPasswordSub(1, true)">Kuat 💪</button>
+                    <button class="action-btn" style="background-color: var(--error);" onclick="checkPasswordSub(1, false)">Lemah ⚠️</button>
+                </div>
+                <div id="feedback-sub2-1" class="feedback"></div>
+            </div>
+
+            <div id="sublvl2-2" class="task-box glass-panel" style="display:none;">
+                <h3>🔍 Tahap 2/4: Analisis Konteks</h3>
+                <p>Jika pengguna bernama Budi, lahir 1990 di Jakarta:</p>
+                <code class="code-display" style="font-size: 1.8rem; letter-spacing: 5px;">Jakarta1990</code>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button class="action-btn" style="background-color: var(--success);" onclick="checkPasswordSub(2, true)">Kuat 💪</button>
+                    <button class="action-btn" style="background-color: var(--error);" onclick="checkPasswordSub(2, false)">Lemah ⚠️</button>
+                </div>
+                <div id="feedback-sub2-2" class="feedback"></div>
+            </div>
+
+            <div id="sublvl2-3" class="task-box glass-panel" style="display:none;">
+                <h3>🔍 Tahap 3/4: Pengujian Terakhir</h3>
+                <code class="code-display" style="font-size: 1.8rem; letter-spacing: 5px;">vQ7!x#P9z</code>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button class="action-btn" style="background-color: var(--success);" onclick="checkPasswordSub(3, true)">Kuat 💪</button>
+                    <button class="action-btn" style="background-color: var(--error);" onclick="checkPasswordSub(3, false)">Lemah ⚠️</button>
+                </div>
+                <div id="feedback-sub2-3" class="feedback"></div>
+            </div>
+
+            <div id="sublvl2-4" class="task-box glass-panel" style="display:none;">
+                <h3>🛡️ Tahap 4/4: Buat Kata Sandi Kuat</h3>
+                <p><strong>Syarat:</strong> Minimal 8 karakter, ada huruf besar, huruf kecil, angka, dan simbol (!@#$%^&*).</p>
+                <input type="text" id="password-input" placeholder="Ketik kata sandi Anda di sini...">
+                <button class="action-btn" onclick="checkPasswordFinal()">Validasi Keamanan</button>
+                <div id="feedback-lvl2" class="feedback"></div>
+            </div>
+
+            <div id="sublvl2-complete" class="info-box" style="display:none; border-left-color: var(--success); background-color: var(--success-bg); color: var(--text-main);">
+                <h3 style="color: var(--success);">🎉 Level 2 Diselesaikan!</h3>
+                <button class="action-btn" onclick="showLevel(3)">Lanjut ke Level 3</button>
+            </div>
+        </div>
+
+        <div id="lvl3" class="level-container">
+            <h1>Level 3: SQL Injection (SQLi)</h1>
+            <div class="info-box">
+                <h3>💡 Konsep Edukasi: Manipulasi Database</h3>
+                <p>Peretas memasukkan logika matematika yang selalu benar (seperti <code>1=1</code>) untuk mengelabui form login.</p>
+            </div>
+            <div class="task-box glass-panel">
+                <h3>💻 Simulasi: Bypass Login</h3>
+                <p>Query: <code style="background: var(--input-bg); padding: 4px 8px; border-radius: 4px;">SELECT * FROM users WHERE user='admin' AND pass='[INPUT]'</code></p>
+                <p>Gunakan payload: <strong style="color: var(--error);">' OR '1'='1</strong></p>
+                <label>Username:</label>
+                <input type="text" value="admin" disabled style="opacity: 0.6; cursor: not-allowed;">
+                <label>Password:</label>
+                <input type="text" id="sqli-input" placeholder="Masukkan payload injeksi...">
+                <button class="action-btn" onclick="checkSQLi()">Coba Login</button>
+                <div id="feedback-lvl3" class="feedback"></div>
+            </div>
+        </div>
+
+        <div id="lvl4" class="level-container">
+            <h1>Level 4: Cross-Site Scripting (XSS)</h1>
+            <div class="info-box">
+                <h3>💡 Konsep Edukasi: Skrip Klien Berbahaya</h3>
+                <p>Celah ini memungkinkan penyerang menyisipkan JavaScript ke dalam website yang dilihat oleh pengguna lain.</p>
+            </div>
+            <div class="task-box glass-panel">
+                <h3>🐛 Simulasi: Injeksi Skrip</h3>
+                <p>Masukkan tag HTML untuk menjalankan <code>alert(1)</code>.</p>
+                <label>Tulis Komentar:</label>
+                <input type="text" id="xss-input" placeholder="Contoh: <script>...</script>">
+                <button class="action-btn" onclick="checkXSS()">Kirim Komentar</button>
+                <div id="feedback-lvl4" class="feedback"></div>
+            </div>
+        </div>
+
+        <div id="lvl5" class="level-container">
+            <h1>Level 5: Kriptografi & Encoding</h1>
+            
+            <div class="info-box">
+                <h3>💡 Konsep Edukasi: Menyembunyikan Pesan</h3>
+                <p>Kriptografi adalah seni menyandikan pesan. Di internet modern, data tidak hanya dienkripsi, tetapi juga di-<em>encode</em> (diubah formatnya) seperti menggunakan ASCII dan Base64 agar dapat dibaca oleh sistem komputer.</p>
+            </div>
+
+            <div id="sublvl5-1" class="task-box glass-panel">
+                <h3>🗝️ Tahap 1/3: Sandi Klasik (Caesar Cipher)</h3>
+                <p>Sandi Caesar menyembunyikan pesan dengan menggeser huruf dan angka. Pesan rahasia di bawah ini telah <strong>digeser maju (+3 langkah ke kanan)</strong>. Huruf besar tetap huruf besar, dan angka juga ikut bergeser (1+3=4).</p>
+                <code class="code-display" style="letter-spacing: 5px;">Dgplq456</code>
+                <p style="font-size: 0.9rem; color: var(--text-muted);"><em>(Petunjuk: Geser mundur 3 langkah. D menjadi A, g menjadi d, 4 menjadi 1, dst. Perhatikan huruf kapital!)</em></p>
+                
+                <label>Teks Asli (Plaintext):</label>
+                <input type="text" id="crypto-input-1" placeholder="Masukkan jawaban Anda...">
+                <button class="action-btn" onclick="checkCryptoSub(1)">Dekripsi Pesan</button>
+                <div id="feedback-sub5-1" class="feedback"></div>
+            </div>
+
+            <div id="sublvl5-2" class="task-box glass-panel" style="display:none;">
+                <h3>🔢 Tahap 2/3: Bahasa Mesin (ASCII)</h3>
+                <p>Komputer tidak memahami huruf secara langsung, mereka mengubah teks menjadi angka desimal menggunakan standar <strong>ASCII</strong>. Masing-masing kelompok angka di bawah mewakili satu huruf (besar atau kecil).</p>
+                <code class="code-display" style="word-spacing: 8px;">72 105 100 117 112 74 111 107 111 119 105</code>
+                <p style="font-size: 0.9rem; color: var(--text-muted);"><em>(Petunjuk: Buka tab browser baru, cari tabel "ASCII to Text" di Google. Perhatikan perbedaan nilai angka untuk huruf kapital dan huruf kecil!)</em></p>
+                
+                <label>Teks Asli (Plaintext):</label>
+                <input type="text" id="crypto-input-2" placeholder="Masukkan hasil terjemahan...">
+                <button class="action-btn" onclick="checkCryptoSub(2)">Terjemahkan Kode</button>
+                <div id="feedback-sub5-2" class="feedback"></div>
+            </div>
+
+            <div id="sublvl5-3" class="task-box glass-panel" style="display:none;">
+                <h3>🔓 Tahap 3/3: Encoding Modern (Base64)</h3>
+                <p>Data yang dikirim di jaringan internet sering diubah menggunakan <strong>Base64</strong>. Ini BUKAN enkripsi, melainkan <em>encoding</em> format data yang bisa dibalik dengan mudah.</p>
+                <code class="code-display">c2VjdXJpdHlfcHJv</code>
+                <p style="font-size: 0.9rem; color: var(--text-muted);"><em>(Petunjuk: Gunakan tool "Base64 Decoder online" untuk menerjemahkan teks di atas.)</em></p>
+                
+                <label>Teks Asli (Plaintext):</label>
+                <input type="text" id="crypto-input-3" placeholder="Hasil dekode...">
+                <button class="action-btn" onclick="checkCryptoSub(3)">Selesaikan Tantangan</button>
+                <div id="feedback-sub5-3" class="feedback"></div>
+            </div>
+
+            <div id="sublvl5-complete" class="info-box" style="display:none; border-left-color: var(--success); background-color: var(--success-bg); color: var(--text-main);">
+                <h3 style="color: var(--success);">🎉 SELAMAT! Anda Telah Menyelesaikan Simulasi!</h3>
+                <p>Luar biasa! Anda telah menyelesaikan seluruh simulasi Cybersecurity. Anda kini memiliki pemahaman fundamental yang sangat kuat tentang cara kerja peretas dan bagaimana melindungi diri dari ancaman siber.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const themeBtn = document.getElementById('theme-toggle-btn');
+        function toggleTheme() {
+            const body = document.documentElement;
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                themeBtn.innerHTML = '🌙 Mode Gelap';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeBtn.innerHTML = '☀️ Mode Terang';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        window.onload = () => {
+            if (localStorage.getItem('theme') === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeBtn.innerHTML = '☀️ Mode Terang';
+            }
+        };
+
+        let unlockedLevels = 1;
+
+        function showLevel(levelNum) {
+            if (levelNum > unlockedLevels) return;
+            document.querySelectorAll('.level-container').forEach(el => el.classList.remove('visible'));
+            document.querySelectorAll('.level-btn').forEach(el => el.classList.remove('current'));
+            document.getElementById('lvl' + levelNum).classList.add('visible');
+            document.getElementById('btn-lvl' + levelNum).classList.add('current');
+        }
+
+        function showFeedback(level, type, message) {
+            let feedbackEl = document.getElementById('feedback-lvl' + level);
+            feedbackEl.className = 'feedback show ' + type;
+            feedbackEl.innerHTML = message;
+            if (type === 'error') {
+                let taskBox = feedbackEl.parentElement;
+                taskBox.classList.remove('shake');
+                void taskBox.offsetWidth;
+                taskBox.classList.add('shake');
+            }
+        }
+
+        function unlockNextLevel(currentLevel) {
+            let nextLevel = currentLevel + 1;
+            document.getElementById('icon-lvl' + currentLevel).innerText = '✅';
+            if (nextLevel <= 5 && unlockedLevels < nextLevel) {
+                unlockedLevels = nextLevel;
+                let btn = document.getElementById('btn-lvl' + nextLevel);
+                btn.classList.add('active');
+                document.getElementById('icon-lvl' + nextLevel).innerText = '🔓';
+                document.getElementById('progress-bar').style.width = (nextLevel * 20) + '%';
+            } else if (currentLevel === 5) {
+                document.getElementById('progress-bar').style.width = '100%';
+            }
+        }
+
+        // ============================
+        // LOGIC LEVEL 1 s/d 4
+        // ============================
+        function checkPhishingSub(step, isPhishing) {
+            let isCorrect = false; let successMsg = ""; let errorMsg = "";
+            if(step === 1) { isCorrect = (isPhishing === true); successMsg = "Tepat! Domain menggunakan 'I' besar (paypaI)."; errorMsg = "Salah! Perhatikan ejaan domain (paypaI)."; }
+            else if (step === 2) { isCorrect = (isPhishing === true); successMsg = "Tepat! Tautan tersembunyi bit.ly."; errorMsg = "Salah! Sorot tautan untuk lihat aslinya."; }
+            else if (step === 3) { isCorrect = (isPhishing === true); successMsg = "Tepat! instargam dan HTTP."; errorMsg = "Salah! Ejaan salah dan bukan HTTPS."; }
+            else if (step === 4) { isCorrect = (isPhishing === false); successMsg = "Tepat! Ini email Github resmi."; errorMsg = "Salah! Ini aman."; }
+            else if (step === 5) { isCorrect = (isPhishing === true); successMsg = "Tepat! Ini Smishing."; errorMsg = "Salah! Kurir resmi tidak pakai .info acak."; }
+
+            let feedbackEl = document.getElementById('feedback-sub1-' + step);
+            if(isCorrect) {
+                feedbackEl.className = 'feedback show success';
+                let nextBtnHtml = step < 5 ? `<button class='action-btn' style='margin-top: 15px;' onclick='nextPhishingStep(${step})'>Lanjut ke Tahap ${step + 1}</button>` : `<button class='action-btn' style='margin-top: 15px;' onclick='nextPhishingStep(${step})'>Selesaikan Level 1</button>`;
+                feedbackEl.innerHTML = successMsg + "<br>" + nextBtnHtml;
+                let buttons = feedbackEl.parentElement.querySelectorAll('.action-btn');
+                buttons[0].disabled = true; buttons[1].disabled = true;
+            } else {
+                feedbackEl.className = 'feedback show error'; feedbackEl.innerHTML = errorMsg;
+                let taskBox = feedbackEl.parentElement; taskBox.classList.remove('shake'); void taskBox.offsetWidth; taskBox.classList.add('shake');
+            }
+        }
+        function nextPhishingStep(step) {
+            document.getElementById('sublvl1-' + step).style.display = 'none';
+            if (step < 5) document.getElementById('sublvl1-' + (step + 1)).style.display = 'block';
+            else { document.getElementById('sublvl1-complete').style.display = 'block'; unlockNextLevel(1); }
+        }
+
+        function checkPasswordSub(step, isStrongSelected) {
+            let isCorrect = false; let successMsg = ""; let errorMsg = "";
+            if (step === 1) { isCorrect = (isStrongSelected === false); successMsg = "Tepat! admin123 sangat lemah."; errorMsg = "Salah! Ini sangat lemah."; }
+            else if (step === 2) { isCorrect = (isStrongSelected === false); successMsg = "Tepat! Data pribadi lemah."; errorMsg = "Salah! Mudah ditebak jika orang tahu profilnya."; }
+            else if (step === 3) { isCorrect = (isStrongSelected === true); successMsg = "Tepat! Sangat kuat dan acak."; errorMsg = "Salah! Sandi acak ini sangat kuat."; }
+
+            let feedbackEl = document.getElementById('feedback-sub2-' + step);
+            if (isCorrect) {
+                feedbackEl.className = 'feedback show success';
+                feedbackEl.innerHTML = successMsg + `<br><button class='action-btn' style='margin-top: 15px;' onclick='nextPasswordStep(${step})'>Lanjut ke Tahap ${step + 1}</button>`;
+                let buttons = feedbackEl.parentElement.querySelectorAll('button:not([onclick^="next"])');
+                buttons.forEach(btn => btn.disabled = true);
+            } else {
+                feedbackEl.className = 'feedback show error'; feedbackEl.innerHTML = errorMsg;
+                let taskBox = feedbackEl.parentElement; taskBox.classList.remove('shake'); void taskBox.offsetWidth; taskBox.classList.add('shake');
+            }
+        }
+        function nextPasswordStep(step) {
+            document.getElementById('sublvl2-' + step).style.display = 'none'; document.getElementById('sublvl2-' + (step + 1)).style.display = 'block';
+        }
+        function checkPasswordFinal() {
+            let pwd = document.getElementById('password-input').value;
+            if (/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/.test(pwd)) {
+                let fb = document.getElementById('feedback-lvl2'); fb.className = 'feedback show success';
+                fb.innerHTML = `Sandi Kuat!<br><button class='action-btn' style='margin-top: 15px;' onclick='completePasswordLevel()'>Selesaikan Level 2</button>`;
+            } else {
+                let fb = document.getElementById('feedback-lvl2'); fb.className = 'feedback show error';
+                fb.innerHTML = 'Masih lemah. Pastikan panjang >8, ada huruf besar, kecil, angka, & simbol.';
+                let taskBox = fb.parentElement; taskBox.classList.remove('shake'); void taskBox.offsetWidth; taskBox.classList.add('shake');
+            }
+        }
+        function completePasswordLevel() {
+            document.getElementById('sublvl2-4').style.display = 'none'; document.getElementById('sublvl2-complete').style.display = 'block'; unlockNextLevel(2);
+        }
+
+        function checkSQLi() {
+            let input = document.getElementById('sqli-input').value;
+            if (input.includes("' OR '1'='1") || input.includes("' OR 1=1")) {
+                showFeedback(3, 'success', `Injeksi Berhasil! Query: SELECT * FROM users WHERE pass='' OR '1'='1'`); unlockNextLevel(3);
+            } else showFeedback(3, 'error', 'Gagal.');
+        }
+
+        function checkXSS() {
+            let input = document.getElementById('xss-input').value.replace(/\s/g, '').toLowerCase();
+            if (input.includes("<scr"+"ipt>alert(1)</scr"+"ipt>") || input.includes("<scr"+"ipt>alert('1')</scr"+"ipt>")) {
+                alert("Simulasi XSS Berhasil!"); showFeedback(4, 'success', 'Berhasil tereksekusi!'); unlockNextLevel(4);
+            } else showFeedback(4, 'error', 'Gagal, pastikan format tag script benar.');
+        }
+
+        // =========================================
+        // LOGIC KHUSUS LEVEL 5: KRIPTOGRAFI
+        // =========================================
+        function checkCryptoSub(step) {
+            let isCorrect = false;
+            let successMsg = "";
+            let errorMsg = "";
+            let inputId = "crypto-input-" + step;
+            // Gunakan trim() untuk membersihkan spasi berlebih, toLowerCase() untuk mempermudah pengecekan (tidak case-sensitive untuk user)
+            let inputVal = document.getElementById(inputId).value.toLowerCase().trim();
+
+            if (step === 1) { // Caesar Cipher: Dgplq456 -> Admin123
+                if (inputVal === "admin123") {
+                    isCorrect = true;
+                    successMsg = "<strong>Tepat Sekali!</strong> Anda berhasil memecahkan sandi Caesar. 'Dgplq456' digeser mundur 3 langkah kembali menjadi 'Admin123'.";
+                } else {
+                    errorMsg = "<strong>Salah.</strong> Ingat, geser mundur (-3) di abjad dan angka. D mundur 3 huruf menjadi A, g mundur 3 menjadi d, dan 4 mundur 3 angka menjadi 1.";
+                }
+            } else if (step === 2) { // ASCII: 72 105... -> HidupJokowi
+                if (inputVal === "hidupjokowi") {
+                    isCorrect = true;
+                    successMsg = "<strong>Tepat Sekali!</strong> Anda menerjemahkan kode ASCII dengan sempurna (72=H, 105=i, dst).";
+                } else {
+                    errorMsg = "<strong>Salah.</strong> Pastikan Anda menerjemahkan setiap angka sesuai tabel ASCII dan jangan lupakan spasi di antaranya (atau mungkin ada huruf yang terlewat).";
+                }
+            } else if (step === 3) { // Base64: c2VjdXJpdHlfcHJv -> security_pro
+                if (inputVal === "security_pro") {
+                    isCorrect = true;
+                    successMsg = "<strong>Sandi Terbuka!</strong> Ini adalah kata tersembunyi yang di-encode menggunakan Base64.";
+                } else {
+                    errorMsg = "<strong>Salah.</strong> Jangan ditebak! Salin teks aslinya ('c2VjdXJpdHlfcHJv') lalu proses di web 'Base64 Decoder online'.";
+                }
+            }
+
+            let feedbackEl = document.getElementById('feedback-sub5-' + step);
+
+            if (isCorrect) {
+                feedbackEl.className = 'feedback show success';
+                let nextBtnHtml = step < 3 
+                    ? `<button class='action-btn' style='margin-top: 15px;' onclick='nextCryptoStep(${step})'>Lanjut ke Tahap ${step + 1} ➡️</button>` 
+                    : `<button class='action-btn' style='margin-top: 15px;' onclick='completeCrypto()'>Selesaikan Simulasi</button>`;
+                
+                feedbackEl.innerHTML = successMsg + "<br>" + nextBtnHtml;
+                
+                // Kunci input field & matikan tombol submit
+                document.getElementById(inputId).disabled = true;
+                let submitBtn = feedbackEl.parentElement.querySelector('button[onclick^="checkCryptoSub"]');
+                if(submitBtn) submitBtn.disabled = true;
+                
+            } else {
+                feedbackEl.className = 'feedback show error';
+                feedbackEl.innerHTML = errorMsg;
+                let taskBox = feedbackEl.parentElement;
+                taskBox.classList.remove('shake');
+                void taskBox.offsetWidth; 
+                taskBox.classList.add('shake');
+            }
+        }
+
+        function nextCryptoStep(currentStep) {
+            document.getElementById('sublvl5-' + currentStep).style.display = 'none';
+            document.getElementById('sublvl5-' + (currentStep + 1)).style.display = 'block';
+        }
+
+        function completeCrypto() {
+            document.getElementById('sublvl5-3').style.display = 'none';
+            document.getElementById('sublvl5-complete').style.display = 'block';
+            unlockNextLevel(5);
+        }
+    </script>
+</body>
+</html>
